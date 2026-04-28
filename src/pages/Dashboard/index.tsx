@@ -124,6 +124,7 @@ export default function Dashboard() {
               rowKey="id"
               size="small"
               pagination={false}
+              scroll={{ x: 700 }}
               style={{ background: 'transparent' }}
               locale={{ emptyText: '暂无数据' }}
             />

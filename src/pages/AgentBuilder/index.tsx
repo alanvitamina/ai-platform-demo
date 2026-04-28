@@ -71,7 +71,7 @@ export default function AgentBuilder() {
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <Title level={3} style={{ margin: 0, color: '#e8edf5' }}>Agent 搭建器</Title>
           <Text type="secondary">低代码搭建自定义 Agent，非技术人员可自助创建</Text>

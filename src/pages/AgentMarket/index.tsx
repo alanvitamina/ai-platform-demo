@@ -40,7 +40,7 @@ export default function AgentMarket() {
             </Text>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
             {agents.map((agent) => (
               <Card
                 key={agent.id}

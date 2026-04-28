@@ -99,8 +99,8 @@ export default function KnowledgeBasePage() {
             key: 'kb',
             label: <Space><DatabaseOutlined />知识库</Space>,
             children: (
-              <Row gutter={16}>
-                <Col span={8}>
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={8}>
                   <Card title="知识库列表" style={{ background: '#0a1628', border: '1px solid #1a3055' }}
                     extra={<Button size="small" type="primary" ghost icon={<PlusOutlined />} disabled>新建</Button>}
                   >
@@ -122,7 +122,7 @@ export default function KnowledgeBasePage() {
                     ))}
                   </Card>
                 </Col>
-                <Col span={16}>
+                <Col xs={24} md={16}>
                   <Card
                     title={selectedKb ? `文档列表 — ${kbs.find((k) => k.id === selectedKb)?.name}` : '选择知识库'}
                     extra={<Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)} disabled={!selectedKb}>添加文档</Button>}

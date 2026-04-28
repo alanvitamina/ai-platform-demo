@@ -78,6 +78,7 @@ export default function Gateway() {
           dataSource={routeData}
           rowKey="level"
           pagination={false}
+          scroll={{ x: 500 }}
           style={{ background: 'transparent' }}
         />
       </Card>
