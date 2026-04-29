@@ -180,7 +180,7 @@ export default function Gateway() {
                 { num: 7, title: '反脱敏还原', desc: '映射表还原\n返回用户', color: '#34d399' },
               ].map((step, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                  <div style={{
+                  <div className="gateway-step-card" style={{
                     width: 120, padding: '12px 10px', borderRadius: 8, textAlign: 'center',
                     background: step.highlight ? 'rgba(255,92,108,0.08)' : 'rgba(255,255,255,0.02)',
                     border: step.highlight ? '2px solid rgba(255,92,108,0.3)' : '1px solid rgba(255,255,255,0.04)',

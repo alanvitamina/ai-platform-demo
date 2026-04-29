@@ -95,7 +95,7 @@ export default function Dashboard() {
                 </div>
                 {/* Capability layer: compact 3×2 card grid */}
                 {idx === 2 ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, paddingLeft: 30 }}>
+                  <div className="capability-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, paddingLeft: 30 }}>
                     {layer.items.map((item, i) => {
                       const icons = ['🔍', '🧩', '💾', '🛡️', '✋', '📊'];
                       return (
@@ -121,7 +121,7 @@ export default function Dashboard() {
                     })}
                   </div>
                 ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, paddingLeft: 30 }}>
+                  <div className="arch-sub-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, paddingLeft: 30 }}>
                     {layer.items.map((item, i) => (
                       <div key={i} style={{ fontSize: 12 }}>
                         <div style={{ color: '#e8edf5', fontWeight: 500, marginBottom: 2 }}>{item.title}</div>
@@ -144,7 +144,7 @@ export default function Dashboard() {
       </Card>
 
       {/* Security highlight */}
-      <div style={{
+      <div className="security-banner" style={{
         background: 'rgba(255,92,108,0.04)',
         border: '1px solid rgba(255,92,108,0.15)',
         borderLeft: '3px solid #ff5c6c',

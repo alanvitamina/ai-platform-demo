@@ -333,7 +333,7 @@ export default function DataFlow() {
         </div>
 
         {/* Zone cards row */}
-        <div style={{ display: 'flex', gap: 0, alignItems: 'stretch', overflowX: 'auto' }}>
+        <div className="df-zone-row" style={{ display: 'flex', gap: 0, alignItems: 'stretch', overflowX: 'auto' }}>
           {zoneIds.map((zid, zi) => {
             const meta = zoneMeta[zid];
             const zd = zoneData[zid];
@@ -343,7 +343,7 @@ export default function DataFlow() {
               <div key={zid} style={{ display: 'flex', alignItems: 'stretch' }}>
                 {/* Connector: outbound (top) + inbound (bottom) stacked */}
                 {zi > 0 && (
-                  <div style={{
+                  <div className="df-connector" style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                     width: 36, flexShrink: 0, gap: 6,
                   }}>
@@ -359,7 +359,7 @@ export default function DataFlow() {
                 )}
 
                 {/* Zone card */}
-                <div style={{
+                <div className={zid === 'user' ? 'df-zone-card df-user-zone' : 'df-zone-card'} style={{
                   flex: zid === 'user' ? '0 0 200px' : '1 1 0',
                   minWidth: zid === 'user' ? 160 : 190,
                   background: '#0f1d35',
@@ -460,7 +460,7 @@ export default function DataFlow() {
       {/* ── Path Cards ── */}
       <div style={{ marginBottom: 36 }}>
         <Title level={5} style={{ color: '#e8edf5', marginBottom: 16 }}>三条路径详情对比</Title>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 16 }}>
+        <div className="path-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 16 }}>
           {pathCards.map((p) => {
             const isSel = selectedPath === p.id;
             const c = pathColors[p.id];
@@ -500,8 +500,8 @@ export default function DataFlow() {
       </div>
 
       {/* ── Scenarios + Observability ── */}
-      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, minWidth: 300 }}>
+      <div className="roundtrip-flow" style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: 280 }}>
           <Title level={4} style={{ color: '#e8edf5', marginBottom: 16 }}>关键场景实例</Title>
           <div className="scenario-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
             {scenarios.map((sc, idx) => (
