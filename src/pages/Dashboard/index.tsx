@@ -93,14 +93,47 @@ export default function Dashboard() {
                   <span style={{ fontSize: 15, fontWeight: 700, color: layer.color }}>{layer.name}</span>
                   <Text type="secondary" style={{ fontSize: 11, fontFamily: 'monospace' }}>{layer.nameEn}</Text>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, paddingLeft: 30 }}>
-                  {layer.items.map((item, i) => (
-                    <div key={i} style={{ fontSize: 12 }}>
-                      <span style={{ color: '#e8edf5', fontWeight: 500 }}>{item.title}</span>
-                      <span style={{ color: '#4a5f80' }}> · {item.desc}</span>
-                    </div>
-                  ))}
-                </div>
+                {/* Capability layer: compact 3×2 card grid */}
+                {idx === 2 ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, paddingLeft: 30 }}>
+                    {layer.items.map((item, i) => {
+                      const icons = ['🔍', '🧩', '💾', '🛡️', '✋', '📊'];
+                      return (
+                        <div key={i} style={{
+                          background: 'rgba(255,255,255,0.015)',
+                          border: '1px solid rgba(255,255,255,0.04)',
+                          borderLeft: `2px solid ${layer.color}40`,
+                          borderRadius: 6,
+                          padding: '10px 12px',
+                          display: 'flex', gap: 10, alignItems: 'flex-start',
+                        }}>
+                          <span style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>{icons[i]}</span>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ color: '#e8edf5', fontWeight: 600, fontSize: 12, marginBottom: 3 }}>{item.title}</div>
+                            <div style={{ color: '#4a5f80', fontSize: 11, lineHeight: 1.5 }}>
+                              {item.desc.split('·').slice(0, 2).map((part, j) => (
+                                <div key={j}>{part.trim()}</div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, paddingLeft: 30 }}>
+                    {layer.items.map((item, i) => (
+                      <div key={i} style={{ fontSize: 12 }}>
+                        <div style={{ color: '#e8edf5', fontWeight: 500, marginBottom: 2 }}>{item.title}</div>
+                        <div style={{ color: '#4a5f80', lineHeight: 1.7 }}>
+                          {item.desc.split('·').map((part, j) => (
+                            <div key={j}>{part.trim()}</div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               {idx < architectureLayers.length - 1 && (
                 <div style={{ textAlign: 'center', padding: '2px 0', color: '#1a3055', fontSize: 16 }}>↓</div>
@@ -110,13 +143,30 @@ export default function Dashboard() {
         </div>
       </Card>
 
+      {/* Security highlight */}
+      <div style={{
+        background: 'rgba(255,92,108,0.04)',
+        border: '1px solid rgba(255,92,108,0.15)',
+        borderLeft: '3px solid #ff5c6c',
+        borderRadius: '0 8px 8px 0',
+        padding: '14px 20px',
+        marginBottom: 24,
+        fontSize: 13,
+        color: '#8899b4',
+        lineHeight: 1.8,
+      }}>
+        <strong style={{ color: '#ff5c6c' }}>🛡️ 安全架构核心：两阶段拦截 + 动态熔断</strong><br />
+        <strong>第一阶段（网关入口）：</strong>用户输入经正则+词典+NER 三层脱敏扫描，按数据级别路由到云端或本地模型。<br />
+        <strong>第二阶段（RAG 出口）：</strong>RAG 检索完成后、模型推理前，二次校验检索结果的数据级别。如用户问题不涉密但检索命中机密知识，<strong style={{ color: '#ff8c42' }}>动态熔断立即触发</strong>——切换本地模型、过滤机密片段或拒绝请求。
+      </div>
+
       {/* Cost & Calls */}
-      <Row gutter={[16, 16]}>
-        <Col xs={24} lg={14}>
+      <Row gutter={[16, 16]} style={{ alignItems: 'stretch' }}>
+        <Col xs={24} lg={17} style={{ display: 'flex' }}>
           <Card
             title={<Space><SafetyOutlined style={{ color: '#ff8c42' }} /><span>模型调用实时明细</span></Space>}
-            style={{ background: '#0a1628', border: '1px solid #1a3055' }}
-            bodyStyle={{ padding: 0 }}
+            style={{ background: '#0a1628', border: '1px solid #1a3055', flex: 1, display: 'flex', flexDirection: 'column' }}
+            styles={{ body: { padding: 0, flex: 1, overflow: 'auto' } }}
           >
             <Table
               columns={costColumns}
@@ -130,11 +180,11 @@ export default function Dashboard() {
             />
           </Card>
         </Col>
-        <Col xs={24} lg={10}>
+        <Col xs={24} lg={7} style={{ display: 'flex' }}>
           <Card
             title={<Space><DollarOutlined style={{ color: '#34d399' }} /><span>成本分布</span></Space>}
-            style={{ background: '#0a1628', border: '1px solid #1a3055' }}
-            bodyStyle={{ padding: '16px 20px' }}
+            style={{ background: '#0a1628', border: '1px solid #1a3055', flex: 1 }}
+            styles={{ body: { padding: '16px 20px' } }}
           >
             <div style={{ marginBottom: 20 }}>
               <Text style={{ fontSize: 12, color: '#8899b4', marginBottom: 8, display: 'block' }}>按部门</Text>

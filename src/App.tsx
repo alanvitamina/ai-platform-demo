@@ -8,6 +8,7 @@ import CustomerAnalysis from './pages/CustomerAnalysis';
 import CodeReview from './pages/CodeReview';
 import ProjectPlanning from './pages/ProjectPlanning';
 import KnowledgeQA from './pages/KnowledgeQA';
+import DataFlow from './pages/DataFlow';
 import Gateway from './pages/Gateway';
 import AgentBuilder from './pages/AgentBuilder';
 import KnowledgeBasePage from './pages/KnowledgeBase';
@@ -40,7 +41,8 @@ export default function App() {
             <Route path="agent/code-review" element={<CodeReview />} />
             <Route path="agent/project-planning" element={<ProjectPlanning />} />
             <Route path="agent/knowledge-qa" element={<KnowledgeQA />} />
-            <Route path="agent-builder" element={<AgentBuilder />} />
+            <Route path="data-flow" element={<DataFlow />} />
+<Route path="agent-builder" element={<AgentBuilder />} />
             <Route path="capabilities" element={<KnowledgeBasePage />} />
             <Route path="gateway" element={<Gateway />} />
             <Route path="*" element={<Navigate to="/" replace />} />

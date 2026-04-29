@@ -1,15 +1,13 @@
-import { Card, Col, Row, Statistic, Table, Tag, Typography, Space, Progress, Timeline } from 'antd';
+import { Card, Col, Row, Statistic, Table, Tag, Typography, Space, Progress } from 'antd';
 import {
-  SafetyOutlined,
   ApiOutlined,
   DollarOutlined,
-  ThunderboltOutlined,
   CloudServerOutlined,
-  ClusterOutlined,
   SecurityScanOutlined,
   SwapOutlined,
+  StopOutlined,
 } from '@ant-design/icons';
-import { costRecords, costByModel } from '../../mock/cost-data';
+import { costByModel } from '../../mock/cost-data';
 
 const { Text, Title } = Typography;
 
@@ -112,27 +110,101 @@ export default function Gateway() {
         </Col>
         <Col xs={24} lg={12}>
           <Card
-            title={<Space><ShieldOutlined style={{ color: '#ff5c6c' }} /><span>脱敏/反脱敏演示</span></Space>}
+            title={<Space><StopOutlined style={{ color: '#ff5c6c' }} /><span>网关拦截实时监控</span></Space>}
             style={{ background: '#0a1628', border: '1px solid #1a3055' }}
             bodyStyle={{ padding: '20px 24px' }}
           >
-            <Timeline
-              items={[
-                { color: '#00b4ff', children: <div><Text strong style={{ color: '#00b4ff' }}>原始请求</Text><br /><Text type="secondary" style={{ fontSize: 12 }}>"张三的手机号13812345678，身份证110101199001011234，电站A核心参数：最大功率5000kW"</Text></div> },
-                { color: '#ff8c42', children: <div><Text strong style={{ color: '#ff8c42' }}>安全分级判定 → 内部级</Text><br /><Text type="secondary" style={{ fontSize: 12 }}>规则命中：手机号、身份证号、核心参数关键词</Text></div> },
-                { color: '#ff5c6c', children: <div><Text strong style={{ color: '#ff5c6c' }}>三层脱敏扫描</Text><br /><Text type="secondary" style={{ fontSize: 12 }}>①正则→手机号、身份证 ②NER→"张三" ③词典→"5000kW"</Text></div> },
-                { color: '#a78bfa', children: <div><Text strong style={{ color: '#a78bfa' }}>替换 & 记录映射</Text><br /><Text type="secondary" style={{ fontSize: 12 }}>"人员A的手机[PHONE_001]，证件[CARD_001]，电站A核心参数：[REDACTED]" → 映射表 → Redis</Text></div> },
-                { color: '#00e5c8', children: <div><Text strong style={{ color: '#00e5c8' }}>反脱敏还原</Text><br /><Text type="secondary" style={{ fontSize: 12 }}>云端返回→查Redis映射表→还原原始实体→返回完整结果给用户</Text></div> },
-              ]}
-            />
+            <div style={{ marginBottom: 20 }}>
+              <Text style={{ fontSize: 12, color: '#8899b4', marginBottom: 8, display: 'block' }}>拦截次数 · 按数据等级</Text>
+              {[
+                { level: '机密级→云端', count: 5, pct: 62, color: '#ff5c6c' },
+                { level: '绝密级→任意', count: 2, pct: 25, color: '#ff5c6c' },
+                { level: '内部级→海外', count: 1, pct: 13, color: '#ff8c42' },
+              ].map((d) => (
+                <div key={d.level} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <div style={{ width: 100, fontSize: 11, color: '#8899b4', textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.level}</div>
+                  <div style={{ flex: 1 }}>
+                    <Progress percent={d.pct} size="small" strokeColor={d.color} trailColor="rgba(255,255,255,0.04)" showInfo={false} />
+                  </div>
+                  <div style={{ width: 40, fontSize: 12, color: d.color, fontWeight: 600 }}>{d.count}次</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 16 }}>
+              <Text style={{ fontSize: 12, color: '#8899b4', marginBottom: 8, display: 'block' }}>模型响应延迟 (ms)</Text>
+              {[
+                { model: 'Claude Opus 4.7', latency: 1200, pct: 85, color: '#ff8c42' },
+                { model: 'GPT-5.5', latency: 980, pct: 70, color: '#00b4ff' },
+                { model: 'GLM-5.1', latency: 650, pct: 46, color: '#a78bfa' },
+                { model: 'DeepSeek V4 (本地)', latency: 420, pct: 30, color: '#34d399' },
+              ].map((m) => (
+                <div key={m.model} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <div style={{ width: 120, fontSize: 10, color: '#8899b4', textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.model}</div>
+                  <div style={{ flex: 1 }}>
+                    <Progress percent={m.pct} size="small" strokeColor={m.color} trailColor="rgba(255,255,255,0.04)" showInfo={false} />
+                  </div>
+                  <div style={{ width: 48, fontSize: 12, color: '#e8edf5', fontWeight: 600 }}>{m.latency}ms</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={{ fontSize: 11, color: '#4a5f80' }}>网关健康状态</Text>
+                <Space size={4}>
+                  <Tag color="green">路由服务 OK</Tag>
+                  <Tag color="green">脱敏引擎 OK</Tag>
+                  <Tag color="green">限流模块 OK</Tag>
+                </Space>
+              </div>
+            </div>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* 7-step security flow */}
+      <Row style={{ marginTop: 16 }}>
+        <Col span={24}>
+          <Card
+            title={<Space><SwapOutlined style={{ color: '#00b4ff' }} /><span>完整安全链路：入口脱敏 → 路由 → RAG → 二次校验 → 推理 → 反脱敏</span></Space>}
+            style={{ background: '#0a1628', border: '1px solid #1a3055' }}
+            bodyStyle={{ padding: '20px 24px' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', overflowX: 'auto', gap: 0, padding: '8px 0' }}>
+              {[
+                { num: 1, title: '用户请求', desc: 'Agent 调用模型', color: '#00b4ff' },
+                { num: 2, title: '入口脱敏', desc: '正则+词典(网关)\nNER(Sidecar)', color: '#ffd166' },
+                { num: 3, title: '路由决策', desc: '按数据级别\n云端/本地', color: '#a78bfa' },
+                { num: 4, title: 'RAG 检索', desc: '向量+关键词\n混合检索', color: '#00e5c8' },
+                { num: 5, title: '🔴 二次校验', desc: '检查检索结果级别\n命中机密→动态熔断', color: '#ff5c6c', highlight: true },
+                { num: 6, title: '模型推理', desc: '安全上下文\n送入模型', color: '#ff8c42' },
+                { num: 7, title: '反脱敏还原', desc: '映射表还原\n返回用户', color: '#34d399' },
+              ].map((step, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                  <div style={{
+                    width: 120, padding: '12px 10px', borderRadius: 8, textAlign: 'center',
+                    background: step.highlight ? 'rgba(255,92,108,0.08)' : 'rgba(255,255,255,0.02)',
+                    border: step.highlight ? '2px solid rgba(255,92,108,0.3)' : '1px solid rgba(255,255,255,0.04)',
+                    ...(step.highlight ? { animation: 'breakerPulse 2s infinite' } : {}),
+                  }}>
+                    <div style={{
+                      fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fontWeight: 600,
+                      padding: '2px 6px', borderRadius: 4, display: 'inline-block', marginBottom: 6,
+                      background: `${step.color}15`, color: step.color,
+                    }}>
+                      {step.num}
+                    </div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: step.color, marginBottom: 4 }}>{step.title}</div>
+                    <div style={{ fontSize: 10, color: '#4a5f80', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{step.desc}</div>
+                  </div>
+                  {i < 6 && (
+                    <div style={{ fontSize: 14, color: '#1a3055', padding: '0 2px' }}>→</div>
+                  )}
+                </div>
+              ))}
+            </div>
           </Card>
         </Col>
       </Row>
     </div>
   );
-}
-
-// Shield icon fallback
-function ShieldOutlined(props: any) {
-  return <SafetyOutlined {...props} />;
 }

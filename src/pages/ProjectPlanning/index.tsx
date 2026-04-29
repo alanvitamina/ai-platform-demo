@@ -1,5 +1,5 @@
-import ChatWindow from '../../components/ChatWindow';
+import DemoPage from '../../components/DemoPage';
 
 export default function ProjectPlanning() {
-  return <ChatWindow agentId={3} agentName="项目方案生成 Agent" agentEmoji="📐" />;
+  return <DemoPage agentId="proj-plan" />;
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Input, Button, Typography, Tag, Space, Spin, Avatar, Grid, Drawer } from 'antd';
-import { SendOutlined, RobotOutlined, UserOutlined, ReloadOutlined, LoadingOutlined, CheckCircleFilled, ThunderboltOutlined, MenuOutlined, HistoryOutlined } from '@ant-design/icons';
-import { sendMessage, getConversations, getMessages } from '../services/api';
+import { DeleteOutlined, SendOutlined, RobotOutlined, UserOutlined, ReloadOutlined, LoadingOutlined, CheckCircleFilled, ThunderboltOutlined, MenuOutlined, HistoryOutlined } from '@ant-design/icons';
+import { sendMessage, getConversations, getMessages, deleteConversation } from '../services/api';
 import { mockChatResponse } from '../services/mock-llm';
 
 const { Text } = Typography;
@@ -118,6 +118,16 @@ export default function ChatWindow({ agentId, agentName, agentEmoji }: Props) {
     } catch { setMessages([]); }
   };
 
+  const handleDeleteConv = async (cid: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setConvs((prev) => prev.filter((c) => c.id !== cid));
+    if (convId === cid) {
+      setConvId(undefined);
+      setMessages([]);
+    }
+    try { await deleteConversation(cid); } catch { /* backend not running */ }
+  };
+
   const handleSend = async () => {
     if (!input.trim() || loading) return;
     const userMsg = input.trim();
@@ -207,11 +217,17 @@ export default function ChatWindow({ agentId, agentName, agentEmoji }: Props) {
       </div>
       {convs.map((c) => (
         <div key={c.id} onClick={() => loadConversation(c.id)}
-          style={{ padding: '10px 12px', cursor: 'pointer', background: convId === c.id ? 'rgba(0,180,255,0.08)' : 'transparent', borderLeft: convId === c.id ? '2px solid #00b4ff' : '2px solid transparent', transition: 'all 0.2s' }}
+          style={{ padding: '10px 12px', cursor: 'pointer', background: convId === c.id ? 'rgba(0,180,255,0.08)' : 'transparent', borderLeft: convId === c.id ? '2px solid #00b4ff' : '2px solid transparent', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
           onMouseEnter={(e) => { if (convId !== c.id) e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
           onMouseLeave={(e) => { if (convId !== c.id) e.currentTarget.style.background = 'transparent'; }}
         >
-          <Text style={{ fontSize: 11, color: '#8899b4' }} ellipsis>{c.title}</Text>
+          <Text style={{ fontSize: 11, color: '#8899b4', flex: 1, minWidth: 0 }} ellipsis>{c.title}</Text>
+          <DeleteOutlined
+            onClick={(e) => handleDeleteConv(c.id, e)}
+            style={{ fontSize: 11, color: '#4a5f80', marginLeft: 8, flexShrink: 0, cursor: 'pointer' }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = '#ff5c6c'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = '#4a5f80'; }}
+          />
         </div>
       ))}
       {convs.length === 0 && <div style={{ padding: 20, textAlign: 'center' }}><Text type="secondary" style={{ fontSize: 11 }}>暂无对话</Text></div>}

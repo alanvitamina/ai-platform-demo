@@ -10,6 +10,7 @@ import {
   BuildOutlined,
   MenuOutlined,
   SafetyOutlined,
+  SwapOutlined,
 } from '@ant-design/icons';
 
 const { Header, Sider, Content } = Layout;
@@ -17,6 +18,7 @@ const { Text } = Typography;
 
 const menuItems = [
   { key: '/', icon: <DashboardOutlined />, label: '平台仪表盘' },
+  { key: '/data-flow', icon: <SwapOutlined />, label: '数据安全流转' },
   { key: '/agents', icon: <AppstoreOutlined />, label: 'Agent 市场' },
   {
     key: 'demo',

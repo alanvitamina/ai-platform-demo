@@ -15,6 +15,12 @@ export async function getConversations(agentId: number) {
   return res.json();
 }
 
+export async function deleteConversation(conversationId: number) {
+  const res = await fetch(`${BASE}/api/chat/conversations/${conversationId}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error('Failed to delete conversation');
+  return res.json();
+}
+
 export async function getMessages(conversationId: number) {
   const res = await fetch(`${BASE}/api/chat/messages/${conversationId}`);
   return res.json();

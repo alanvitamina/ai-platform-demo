@@ -1,5 +1,5 @@
-import ChatWindow from '../../components/ChatWindow';
+import DemoPage from '../../components/DemoPage';
 
 export default function CustomerAnalysis() {
-  return <ChatWindow agentId={1} agentName="客户需求分析 Agent" agentEmoji="🎯" />;
+  return <DemoPage agentId="mkt-customer" />;
 }

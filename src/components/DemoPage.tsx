@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Card, Button, Tag, Space, Typography, Empty } from 'antd';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Card, Button, Tag, Space, Typography, Empty, Switch, Grid } from 'antd';
 import {
   SendOutlined,
   LoadingOutlined,
@@ -7,7 +7,11 @@ import {
   UserOutlined,
   RobotOutlined,
   ThunderboltOutlined,
-  RightOutlined,
+  PauseCircleOutlined,
+  CaretRightOutlined,
+  ReloadOutlined,
+  HistoryOutlined,
+  CloseOutlined,
 } from '@ant-design/icons';
 import { demoSessions } from '../mock/conversations';
 import { getAgentById } from '../mock/agents';
@@ -26,16 +30,27 @@ export default function DemoPage({ agentId }: { agentId: string }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [visibleSteps, setVisibleSteps] = useState<number[]>([]);
   const [doneSteps, setDoneSteps] = useState<number[]>([]);
+  const [autoPlay, setAutoPlay] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.md;
+
+  const reset = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setCurrentStep(0);
+    setVisibleSteps([0]);
+    setDoneSteps([]);
+    setAutoPlay(true);
+    // Schedule first step to appear
+    setTimeout(() => setDoneSteps([0]), 400);
+  }, []);
 
   useEffect(() => {
-    setCurrentStep(0);
-    setVisibleSteps([]);
-    setDoneSteps([]);
-  }, [agentId]);
+    reset();
+  }, [agentId, reset]);
 
-  const step = session.steps[currentStep];
-
-  const advance = () => {
+  const advance = useCallback(() => {
     if (currentStep >= session.steps.length - 1) return;
     const next = currentStep + 1;
     setCurrentStep(next);
@@ -43,9 +58,21 @@ export default function DemoPage({ agentId }: { agentId: string }) {
     setTimeout(() => {
       setDoneSteps((prev) => [...prev, next]);
     }, 400);
-  };
+  }, [currentStep, session.steps.length]);
 
-  // Show initial step
+  // Auto-play timer
+  useEffect(() => {
+    if (!autoPlay) return;
+    if (currentStep >= session.steps.length - 1) return;
+    timerRef.current = setTimeout(() => {
+      advance();
+    }, 3500);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [autoPlay, currentStep, advance, session.steps.length]);
+
+  // Show initial step on reset
   useEffect(() => {
     if (currentStep === 0 && !visibleSteps.includes(0)) {
       setVisibleSteps([0]);
@@ -53,11 +80,14 @@ export default function DemoPage({ agentId }: { agentId: string }) {
     }
   }, [currentStep, visibleSteps]);
 
+  const step = session.steps[currentStep];
+  const isComplete = currentStep >= session.steps.length - 1 && doneSteps.includes(currentStep);
+
   return (
     <div style={{ maxWidth: 1400, margin: '0 auto' }}>
       {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8, flexWrap: 'wrap' }}>
           <div
             style={{
               width: 44, height: 44, borderRadius: 12,
@@ -67,45 +97,120 @@ export default function DemoPage({ agentId }: { agentId: string }) {
           >
             {agent.emoji}
           </div>
-          <div>
+          <div style={{ flex: 1, minWidth: 200 }}>
             <Title level={3} style={{ margin: 0, color: '#e8edf5' }}>{agent.name}</Title>
             <Text type="secondary">{agent.description}</Text>
           </div>
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+          <Space wrap>
             {agent.tools.map((t) => (
               <Tag key={t.label} color={t.color === 'gold' ? 'gold' : t.color === 'orange' ? 'orange' : t.color === 'cyan' ? 'cyan' : t.color === 'blue' ? 'blue' : t.color === 'purple' ? 'purple' : t.color === 'green' ? 'green' : 'red'}>
                 {t.label}
               </Tag>
             ))}
+          </Space>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <Text type="secondary" style={{ fontSize: 13 }}>🟢 {session.title}</Text>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Text style={{ fontSize: 11, color: '#8899b4' }}>自动播放</Text>
+            <Switch
+              size="small"
+              checked={autoPlay}
+              onChange={(v) => {
+                setAutoPlay(v);
+                if (timerRef.current) clearTimeout(timerRef.current);
+              }}
+            />
+            <Button size="small" icon={<ReloadOutlined />} onClick={reset} style={{ borderColor: '#1a3055', color: '#8899b4' }}>
+              重置
+            </Button>
           </div>
         </div>
-        <Text type="secondary" style={{ fontSize: 13 }}>🟢 {session.title}</Text>
       </div>
 
       {/* Main content */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 20 }}>
-        {/* Left: Conversation */}
+      <div style={{ display: 'grid', gridTemplateColumns: showHistory ? '280px 1fr 300px' : '1fr 300px', gap: 16, transition: 'all 0.3s' }}>
+        {/* History sidebar */}
+        {showHistory && (
+          <Card
+            title={
+              <Space>
+                <HistoryOutlined style={{ color: '#00b4ff' }} />
+                <span style={{ fontSize: 13 }}>对话历史</span>
+              </Space>
+            }
+            extra={
+              <Button type="text" size="small" icon={<CloseOutlined />} style={{ color: '#8899b4' }} onClick={() => setShowHistory(false)} />
+            }
+            style={{ background: '#0a1628', border: '1px solid #1a3055' }}
+            bodyStyle={{ padding: '8px 12px', maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}
+          >
+            {session.steps.slice(0, currentStep + 1).map((s, idx) => (
+              <div
+                key={s.id}
+                onClick={() => {
+                  setCurrentStep(idx);
+                  setVisibleSteps((prev) => Array.from(new Set([...prev, idx])));
+                  setDoneSteps((prev) => Array.from(new Set([...prev, idx])));
+                }}
+                style={{
+                  padding: '8px 10px', borderRadius: 6, cursor: 'pointer', marginBottom: 4,
+                  background: currentStep === idx ? 'rgba(0,180,255,0.08)' : 'transparent',
+                  border: currentStep === idx ? '1px solid rgba(0,180,255,0.2)' : '1px solid transparent',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <Text style={{ fontSize: 11, color: currentStep === idx ? '#00b4ff' : '#8899b4' }} ellipsis>
+                  {idx + 1}. {s.conversation.user ? s.conversation.user.slice(0, 30) + '...' : s.conversation.agent?.slice(0, 30) + '...'}
+                </Text>
+              </div>
+            ))}
+            {session.steps.length === 0 && <Empty description="暂无对话" image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+          </Card>
+        )}
+
+        {/* Center: Conversation */}
         <Card
           title={
             <Space>
-              <RobotOutlined style={{ color: '#00b4ff' }} />
-              <span>对话</span>
+              <RobotOutlined style={{ color: '#a78bfa' }} />
+              <span style={{ fontSize: 14 }}>演示对话</span>
               <Tag>{currentStep + 1} / {session.steps.length}</Tag>
             </Space>
           }
           extra={
-            <Button
-              type="primary"
-              icon={<RightOutlined />}
-              onClick={advance}
-              disabled={currentStep >= session.steps.length - 1}
-              style={{ background: 'linear-gradient(135deg, #00b4ff, #0958d9)' }}
-            >
-              下一步
-            </Button>
+            <Space>
+              <Button
+                type="text"
+                size="small"
+                icon={showHistory ? <HistoryOutlined style={{ color: '#00b4ff' }} /> : <HistoryOutlined />}
+                onClick={() => setShowHistory(!showHistory)}
+                style={{ color: showHistory ? '#00b4ff' : '#8899b4' }}
+              />
+              {!autoPlay && (
+                <Button
+                  type="primary"
+                  icon={<CaretRightOutlined />}
+                  onClick={advance}
+                  disabled={currentStep >= session.steps.length - 1}
+                  style={{ background: 'linear-gradient(135deg, #00b4ff, #0958d9)' }}
+                >
+                  下一步
+                </Button>
+              )}
+              {autoPlay && !isComplete && (
+                <Button
+                  icon={<PauseCircleOutlined />}
+                  onClick={() => setAutoPlay(false)}
+                  style={{ borderColor: '#1a3055', color: '#ff8c42' }}
+                >
+                  暂停
+                </Button>
+              )}
+            </Space>
           }
-          style={{ background: '#0a1628', border: '1px solid #1a3055', minHeight: 520 }}
-          bodyStyle={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, maxHeight: 520, overflowY: 'auto' }}
+          style={{ background: '#0a1628', border: '1px solid #1a3055' }}
+          bodyStyle={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16, maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}
         >
           {session.steps.slice(0, currentStep + 1).map((s, idx) => (
             <div key={s.id} className={`${visibleSteps.includes(idx) ? 'anim-fade-up' : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -135,11 +240,16 @@ export default function DemoPage({ agentId }: { agentId: string }) {
               {idx < currentStep && <div style={{ borderTop: '1px solid rgba(255,255,255,0.04)', margin: '4px 0' }} />}
             </div>
           ))}
-          {currentStep >= session.steps.length - 1 && (
+          {isComplete && (
             <div style={{ textAlign: 'center', padding: 20 }}>
               <CheckCircleFilled style={{ fontSize: 40, color: '#34d399', marginBottom: 8 }} />
               <div style={{ color: '#34d399', fontSize: 15, fontWeight: 600 }}>演示完成</div>
               <Text type="secondary">本次演示展示了 {agent.name} 的完整工作流程</Text>
+              <div style={{ marginTop: 12 }}>
+                <Button icon={<ReloadOutlined />} onClick={reset} style={{ borderColor: '#1a3055', color: '#8899b4' }}>
+                  重新播放
+                </Button>
+              </div>
             </div>
           )}
         </Card>
@@ -149,11 +259,11 @@ export default function DemoPage({ agentId }: { agentId: string }) {
           title={
             <Space>
               <ThunderboltOutlined style={{ color: '#ff8c42' }} />
-              <span>Agent 工作过程</span>
+              <span style={{ fontSize: 14 }}>工作过程</span>
             </Space>
           }
           style={{ background: '#0a1628', border: '1px solid #1a3055' }}
-          bodyStyle={{ padding: '16px 20px', maxHeight: 520, overflowY: 'auto' }}
+          bodyStyle={{ padding: '16px 20px', maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}
         >
           {step ? (
             <div>

@@ -1,5 +1,5 @@
-import ChatWindow from '../../components/ChatWindow';
+import DemoPage from '../../components/DemoPage';
 
 export default function CodeReview() {
-  return <ChatWindow agentId={2} agentName="代码审查 Agent" agentEmoji="💻" />;
+  return <DemoPage agentId="rd-code-review" />;
 }

@@ -1,5 +1,5 @@
-import ChatWindow from '../../components/ChatWindow';
+import DemoPage from '../../components/DemoPage';
 
 export default function KnowledgeQA() {
-  return <ChatWindow agentId={4} agentName="内部知识问答 Agent" agentEmoji="💬" />;
+  return <DemoPage agentId="admin-qa" />;
 }

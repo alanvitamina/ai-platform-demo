@@ -23,6 +23,26 @@ const models = [
   { value: 'DeepSeek V4 (本地)', label: 'DeepSeek V4 (本地部署)' },
 ];
 
+// Fallback demo agents when backend not running
+const FALLBACK_AGENTS = [
+  { id: 101, name: '⚡ 我的能源助手', emoji: '⚡', description: '自定义能源调度分析Agent', model: 'Claude Opus 4.7', category: 'energy', is_preset: false, tools: ['天气API', '时序数据库'] },
+  { id: 102, name: '📊 项目周报生成器', emoji: '📊', description: '自动汇总项目进度生成周报', model: 'GPT-5.5', category: 'project', is_preset: false, tools: ['飞书文档', '结构化数据库'] },
+  { id: 103, name: '🔍 合同条款审查助手', emoji: '🔍', description: '审查合同中的风险条款', model: 'GLM-5.1', category: 'admin', is_preset: false, tools: ['合同模板库', '飞书审批'] },
+];
+const FALLBACK_TOOLS = [
+  { id: 1, name: '向量知识库检索', description: 'Milvus 语义检索', tool_type: 'mcp', is_active: 1 },
+  { id: 2, name: '飞书文档API', description: '飞书文档读写', tool_type: 'feishu', is_active: 1 },
+  { id: 3, name: '天气数据API', description: '实时天气与预报', tool_type: 'api', is_active: 1 },
+  { id: 4, name: '设备时序数据查询', description: 'TDengine 时序查询', tool_type: 'database', is_active: 1 },
+  { id: 5, name: 'Git代码仓库API', description: 'Git PR/Commit', tool_type: 'api', is_active: 1 },
+  { id: 6, name: '碳排放计算工具', description: '碳排放量计算', tool_type: 'mcp', is_active: 1 },
+];
+const FALLBACK_KBS = [
+  { id: 1, name: '能源行业案例库', description: '综合能源项目案例', doc_count: 35 },
+  { id: 2, name: '公司制度文档库', description: '人事/财务/行政', doc_count: 28 },
+  { id: 3, name: '技术标准库', description: '国标/行标/企标', doc_count: 42 },
+];
+
 export default function AgentBuilder() {
   const [agents, setAgents] = useState<any[]>([]);
   const [tools, setTools] = useState<any[]>([]);
@@ -34,10 +54,14 @@ export default function AgentBuilder() {
   const load = async () => {
     try {
       const [a, t, k] = await Promise.all([getAgents(), getTools(), getKnowledgeBases()]);
-      setAgents(a);
-      setTools(t);
-      setKbs(k);
-    } catch { /* backend not running */ }
+      setAgents(a && a.length ? a : FALLBACK_AGENTS);
+      setTools(t && t.length ? t : FALLBACK_TOOLS);
+      setKbs(k && k.length ? k : FALLBACK_KBS);
+    } catch {
+      setAgents(FALLBACK_AGENTS);
+      setTools(FALLBACK_TOOLS);
+      setKbs(FALLBACK_KBS);
+    }
   };
 
   useEffect(() => { load(); }, []);
