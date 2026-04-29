@@ -5,4 +5,5 @@ export default defineConfig({
   base: '/ai-platform-demo/',
   plugins: [react()],
   server: { host: '0.0.0.0', port: 3000 },
+  build: { outDir: 'docs' },
 });
